@@ -6,26 +6,27 @@
 #include <vector>
 #include <memory>
 #include <iterator>
+#include <functional>
 
 template <typename... T>
 class Event
 {
 protected:
 	std::string mType;
-	std::vector<void(*)(T...)> mListeners;
+	std::vector<std::function<void(T...)>> mListeners;
 public:
 	Event() { mType = "undefined"; };
 	Event(std::string type) { mType = type; }; 
 
 	/* Adds a listener function to mListeners */
-	void AddListener(void(*listener)(T...))
+	void AddListener(std::function<void(T...)> listener)
 	{
 		mListeners.push_back(listener);
 	};
 
-	void RemoveListener(void(*listener)(T...))
+	void RemoveListener(std::function<void(T...)> listener)
 	{
-		typename std::vector<void(*)(T...)>::iterator it;
+		typename std::vector<std::function<void(T...)>>::iterator it;
 
 		for (it = mListeners.begin(); it != mListeners.end(); it++) {
 			if ((*it) == listener) {
@@ -38,12 +39,12 @@ public:
 			"subscribed.");
 	};
 
-	void operator+= (void(*listener)(T...))
+	void operator+= (std::function<void(T...)> listener)
 	{
 		AddListener(listener);
 	};
 
-	void operator-= (void(*listener)(T...))
+	void operator-= (std::function<void(T...)> listener)
 	{
 		RemoveListener(listener);
 	};
