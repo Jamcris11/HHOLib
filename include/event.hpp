@@ -99,7 +99,7 @@ private:
 public:
 	void BindEvent(Event<T...>& event)
 	{
-		event.AddListener({ std::bind(&EventBus::Store, this, std::placeholders::_1) });
+		event.AddListener({ std::bind_front(&EventBus::Store, this) });
 	};
 
 	void Store(T... args)
