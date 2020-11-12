@@ -21,6 +21,12 @@ public:
 		this->func = function;
 	}
 
+	template<typename F, typename... Args>
+	EventListener(F f, Args... args)
+	{
+		this->func = std::bind_front(f, args...);
+	}
+
 	void operator () (T... args)
 	{
 		this->func(args...);
@@ -107,13 +113,15 @@ public:
 		queue.push(VariadicToTuple(args...));
 	};
 
-	void Next()
+	int Next()
 	{
 		for (auto listener : this->mListeners) {
 			std::apply(listener, queue.front());
 		}
 
 		queue.pop();
+
+		return queue.size();
 	};
 };
 
