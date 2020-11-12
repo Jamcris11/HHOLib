@@ -11,22 +11,39 @@
 #include <queue>
 
 template <typename... T>
+class EventListener
+{
+private:
+	std::function<void(T...)> func;
+public:
+	EventListener(std::function<void(T...)> function)
+	{
+		this->func = function;
+	}
+
+	void operator () (T... args)
+	{
+		this->func(args...);
+	}
+};
+
+template <typename... T>
 class ListenerHandler
 {
 protected:
-	std::vector<std::function<void(T...)>> mListeners;
+	std::vector<EventListener<T...>> mListeners;
 public:
-	void AddListener(std::function<void(T...)> listener)
+	void AddListener(EventListener<T...> listener)
 	{
 		mListeners.push_back(listener);
 	};
 
-	void RemoveListener(std::function<void(T...)> listener)
+	void RemoveListener(EventListener<T...> listener)
 	{
-		typename std::vector<std::function<void(T...)>>::iterator it;
+		typename std::vector<EventListener<T...>>::iterator it;
 
 		for (it = mListeners.begin(); it != mListeners.end(); it++) {
-			if ((*it) == listener) {
+			if (it == listener) {
 				mListeners.erase(it);
 				return;
 			}
@@ -36,12 +53,12 @@ public:
 			"subscribed.");
 	};
 
-	void operator+= (std::function<void(T...)> listener)
+	void operator+= (EventListener<T...> listener)
 	{
 		AddListener(listener);
 	};
 
-	void operator-= (std::function<void(T...)> listener)
+	void operator-= (EventListener<T...> listener)
 	{
 		RemoveListener(listener);
 	};
@@ -82,8 +99,7 @@ private:
 public:
 	void BindEvent(Event<T...>& event)
 	{
-		auto f = std::bind(&EventBus::Store, this, std::placeholders::_1);
-		event.AddListener(f);
+		event.AddListener({ std::bind(&EventBus::Store, this, std::placeholders::_1) });
 	};
 
 	void Store(T... args)
